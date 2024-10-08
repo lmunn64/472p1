@@ -1,11 +1,12 @@
 package edu.iastate.cs472.proj1;
-
+import java.util.Scanner;
+import java.io.File;
 import java.io.FileNotFoundException;
 
 /**
  *  
  * @author
- *
+ * Luke Munn
  */
 
 public class PuzzleSolver 
@@ -34,12 +35,14 @@ public class PuzzleSolver
 		// Read an initial board configuration from a file.  
 
 		// Call EightPuzzle.solve8puzzle() to solve the puzzle. 
-		
-		// You may make it interactive by repeatedly accepting puzzle files and print out 
-		// solutions.  (No extra credit but good for debugging and for the user.)
+		// File boardFile = new File("8Puzzle.txt");
+
 		String fileNames[] = new String[] {"8Puzzle.txt"}; 
-		
-		// TODO 
+
+		State s0 = new State(fileNames[0]);
+
+		// EightPuzzle.solve8Puzzle(s0);
+
 	}
 
 }

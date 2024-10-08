@@ -1,6 +1,8 @@
 package edu.iastate.cs472.proj1;
 
 import java.io.FileNotFoundException;
+import java.util.Scanner;
+import java.io.File;
 
 /**
  *  
@@ -60,7 +62,12 @@ public class State implements Cloneable, Comparable<State>
 	 */
     public State(int[][] board) throws IllegalArgumentException 
     {
-    	// TODO 
+    	this.board = board;
+        previous = null;
+        next = null;
+        predecessor = null;
+        move = null;
+        numMoves = 0;
 	}
     
     
@@ -79,8 +86,37 @@ public class State implements Cloneable, Comparable<State>
      */
     public State (String inputFileName) throws FileNotFoundException, IllegalArgumentException
     {
-    	
-    	// TODO 
+        int[][] initBoard = new int[3][3];
+        File file = new File("8Puzzle.txt");
+        Scanner scnr = new Scanner(file);
+		int j = 0;
+		int i = 0;
+		while(scnr.hasNext()){
+			initBoard[i][j] = Integer.valueOf(scnr.next());
+			switch((j + 1) % 3){
+				case 0:
+					i++;
+					j=0;
+					break;
+				default:
+					j++;
+					break;
+			}
+		}
+
+    	this.board = initBoard;
+        previous = null;
+        next = null;
+        predecessor = null;
+        move = null;
+        numMoves = 0;
+
+        for(i = 0; i < 3; i++){
+			for(j = 0; j < 3; j++){
+				System.out.print(board[i][j]  + " ");
+			}
+			System.out.println();
+		}
 	}
     
     
