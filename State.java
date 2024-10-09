@@ -427,7 +427,7 @@ public class State implements Cloneable, Comparable<State>
      * 
      * @return the number of mismatched tiles between this state and the goal state. 
      */
-	public int computeNumMismatchedTiles()
+	private int computeNumMismatchedTiles()
 	{
         int mismatched = 0;
         if(numMismatchedTiles > 0){
@@ -450,7 +450,7 @@ public class State implements Cloneable, Comparable<State>
 	 * 
 	 * @return the Manhattan distance between this state and the goal state. 
 	 */
-	public int computeManhattanDistance()
+	private int computeManhattanDistance()
 	{
         int dist = 0;
         if(ManhattanDistance > 0){
@@ -479,7 +479,7 @@ public class State implements Cloneable, Comparable<State>
 	 * @return the value of the private variable numSingleDoubleMoves that bounds from below the number of moves, 
 	 *         single or double, which will take this state to the goal state.
 	 */
-	public int computeNumSingleDoubleMoves()
+	private int computeNumSingleDoubleMoves()
 	{
 		int dist = 0;
         if(numSingleDoubleMoves > 0){

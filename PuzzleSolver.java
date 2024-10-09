@@ -40,7 +40,6 @@ public class PuzzleSolver
 
 		State s0 = new State(fileNames[0]);
 		s0.solvable();
-		System.out.println(s0.computeNumSingleDoubleMoves());
 		// EightPuzzle.solve8Puzzle(s0);
 
 	}
