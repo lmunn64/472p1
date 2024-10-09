@@ -1,6 +1,7 @@
 package edu.iastate.cs472.proj1;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.io.File;
 
@@ -36,7 +37,7 @@ public class State implements Cloneable, Comparable<State>
 	
 	public Move move;           // the move that generated this state from its predecessor
 	public int numMoves; 	    // number of moves from the initial state to this state
-
+    public int[] empty = {0,0}; // location of empty square
 	public static Heuristic heu; // heuristic used. shared by all the states. 
 	
 	private int numMismatchedTiles = -1;    // number of mismatched tiles between this state 
@@ -45,7 +46,7 @@ public class State implements Cloneable, Comparable<State>
 	                                        // goal state; negative if not computed yet. 
 	private int numSingleDoubleMoves = -1;  // number of single and double moves with each double 
 										    // move counted as one; negative if not computed yet. 
-
+    static final int[][] GOALSTATE = {{1,2,3},{8,0,4},{7,6,5}};
 	
 	/**
 	 * Constructor (for the initial state).  
@@ -63,6 +64,14 @@ public class State implements Cloneable, Comparable<State>
     public State(int[][] board) throws IllegalArgumentException 
     {
     	this.board = board;
+        for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+				if((board[i][j] == 0)){
+                    empty[0] = i;
+                    empty[1] = j;
+                }
+			}
+		}
         previous = null;
         next = null;
         predecessor = null;
@@ -111,12 +120,12 @@ public class State implements Cloneable, Comparable<State>
         move = null;
         numMoves = 0;
 
-        for(i = 0; i < 3; i++){
-			for(j = 0; j < 3; j++){
-				System.out.print(board[i][j]  + " ");
-			}
-			System.out.println();
-		}
+        // for(i = 0; i < 3; i++){
+		// 	for(j = 0; j < 3; j++){
+		// 		System.out.print(board[i][j]  + " ");
+		// 	}
+		// 	System.out.println();
+		// }
 	}
     
     
@@ -144,8 +153,113 @@ public class State implements Cloneable, Comparable<State>
      */                                  
     public State successorState(Move m) throws IllegalArgumentException 
     {
-    	// TODO 
-    	return null; 
+        int i = empty[0];
+        int j = empty[1];
+
+        State succ = this.clone();
+
+        // test equals to predecessor
+        if(this.equals(succ)){
+            return null;
+        }
+        
+        // check and handle move
+    	switch(m){
+            case LEFT:
+                if(j < 2){
+                    temp = succ.board[i][j+1];
+                    succ.board[i][j] = temp;
+                    succ.board[i][j+1] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move LEFT");
+                }
+                break;
+            case RIGHT:
+                if(j > 0){
+                    temp = succ.board[i][j-1];
+                    succ.board[i][j] = temp;
+                    succ.board[i][j-1] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move RIGHT");
+                }
+                break;
+            case UP:
+                if(i < 2){
+                    temp = succ.board[i+1][j];
+                    succ.board[i][j] = temp;
+                    succ.board[i+1][j] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move UP");
+                }
+                break;
+            case DOWN:
+                if(i > 0){
+                    temp = succ.board[i-1][j];
+                    succ.board[i][j] = temp;
+                    succ.board[i-1][j] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move DOWN");
+                }
+                break;
+            case DBL_RIGHT:
+                if(j == 2){
+                    temp1 = succ.board[i][j-1];
+                    temp2 = succ.board[i][j-2];
+                    succ.board[i][j] = temp1;
+                    succ.board[i][j-1] = temp2;
+                    succ.board[i][j-2] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move DBL_RIGHT");
+                }
+                break;
+            case DBL_LEFT:
+                if(j == 0){
+                    temp1 = succ.board[i][j+1];
+                    temp2 = succ.board[i][j+2];
+                    succ.board[i][j] = temp1;
+                    succ.board[i][j+1] = temp2;
+                    succ.board[i][j+2] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move DBL_LEFT");
+                }
+                break;
+            case DBL_UP:
+                if(i == 0){
+                    temp1 = succ.board[i+1][j];
+                    temp2 = succ.board[i+2][j];
+                    succ.board[i][j] = temp1;
+                    succ.board[i+1][j] = temp2;
+                    succ.board[i+2][j] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move DBL_UP");
+                }
+                break;
+            case DBL_DOWN:
+                if(i == 2){
+                    temp1 = succ.board[i-1][j];
+                    temp2 = succ.board[i-2][j];
+                    succ.board[i][j] = temp1;
+                    succ.board[i-1][j] = temp2;
+                    succ.board[i-2][j] = 0;
+                }
+                else{
+                    throw new IllegalArgumentException("Illegal move DBL_DOWN");
+                }
+                break; 
+        }
+    	
+        succ.predecessor = this;
+        succ.move = m;
+        succ.numMoves = this.numMoves + 1;
+
+        return succ;  
     }
     
         
@@ -160,8 +274,21 @@ public class State implements Cloneable, Comparable<State>
      */
     public boolean solvable()
     {
-    	// TODO 
-    	return false; 
+        int inversions = 0;
+    	for(int i = 0; i < 9; i++){
+            if(board[i/3][i%3] == 0){
+                i++;
+            }
+			for(int j = i+1; j < 9; j++){
+				if((board[j/3][j%3] < board[i/3][i%3]) && (board[j/3][j%3] != 0)){
+                    inversions++;
+                }
+			}
+		}
+        if((inversions - 7) % 2 == 0){
+            return true; 
+        }
+    	return false;
     }
     
     
@@ -176,7 +303,9 @@ public class State implements Cloneable, Comparable<State>
      */
     public boolean isGoalState()
     {
-    	// TODO 
+    	if(Arrays.deepEquals(GOALSTATE, board)){
+            return true;
+        }
     	return false; 
     }
     
@@ -196,13 +325,26 @@ public class State implements Cloneable, Comparable<State>
      * 
      */
     @Override 
-    public String toString()
-    {
-    	// TODO 
-    	return null; 
+    public String toString(){
+    	String hello = "";
+        for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+				if(board[i][j] == 0){
+                    hello = hello + " ";
+                }
+                else{
+                    hello = hello + board[i][j];
+                }
+                if(j < 2){
+                    hello = hello + " ";
+                }
+                else{
+                    hello = hello + "\n";
+                }
+			}
+        }
+        return hello;
     }
-    
-    
     /**
      * Create a clone of this State object by copying over the board[][]. Set the links previous,
      * next, and predecessor to null. 
@@ -212,8 +354,20 @@ public class State implements Cloneable, Comparable<State>
     @Override
     public Object clone()
     {
-    	// TODO 
-    	return null; 
+        int[][] newBoard;
+
+    	for(int a = 0; a < 3; a++){
+			for(int b = 0; b < 3; b++){
+				newBoard[a][b] = this.board[a][b];
+			}
+		}
+
+        State clone = new State(newBoard);
+        clone.predecessor = null;
+        clone.previous = null;
+        clone.next = null;
+
+    	return clone; 
     }
   
 
@@ -224,8 +378,10 @@ public class State implements Cloneable, Comparable<State>
     @Override 
     public boolean equals(Object o)
     {
-    	// TODO 
-    	return false; 
+    	if (Arrays.deepEquals(board, o.board)){
+            return true; 
+        }
+    	return false;
     }
         
     
@@ -243,7 +399,7 @@ public class State implements Cloneable, Comparable<State>
      */
     public int cost() throws IllegalArgumentException
     {
-    	// TODO 
+    	//TODO 
     	return 0; 
     }
 
@@ -271,10 +427,20 @@ public class State implements Cloneable, Comparable<State>
      * 
      * @return the number of mismatched tiles between this state and the goal state. 
      */
-	private int computeNumMismatchedTiles()
+	public int computeNumMismatchedTiles()
 	{
-		// TODO 
-		return 0; 
+        int mismatched = 0;
+        if(numMismatchedTiles > 0){
+            return numMismatchedTiles;
+        }
+		for(int a = 0; a < 3; a++){
+			for(int b = 0; b < 3; b++){
+				if((GOALSTATE[a][b] != this.board[a][b]) && this.board[a][b] != 0){
+                    mismatched++;
+                }
+			}
+		}
+		return mismatched; 
 	}
 
 	
@@ -284,10 +450,25 @@ public class State implements Cloneable, Comparable<State>
 	 * 
 	 * @return the Manhattan distance between this state and the goal state. 
 	 */
-	private int computeManhattanDistance()
+	public int computeManhattanDistance()
 	{
-		// TODO 
-		return 0; 
+        int dist = 0;
+        if(ManhattanDistance > 0){
+            return ManhattanDistance;
+        }
+
+		for(int i = 0; i < 9; i++){
+            if(board[i/3][i%3] == 0){
+                i++;
+            }
+			for(int j = 0; j < 9; j++){
+				if(GOALSTATE[j/3][j%3] == board[i/3][i%3]){
+                    dist += Math.abs((i/3) - (j/3)) + Math.abs((i%3) - (j%3));
+                }
+			}
+		} 
+        ManhattanDistance = dist;
+		return dist; 
 	}
 	
 	
@@ -298,9 +479,99 @@ public class State implements Cloneable, Comparable<State>
 	 * @return the value of the private variable numSingleDoubleMoves that bounds from below the number of moves, 
 	 *         single or double, which will take this state to the goal state.
 	 */
-	private int computeNumSingleDoubleMoves()
+	public int computeNumSingleDoubleMoves()
 	{
-		// TODO 
-		return 0; 
+		int dist = 0;
+        if(numSingleDoubleMoves > 0){
+            return numSingleDoubleMoves;
+        }
+
+		for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+                if(i == 1){
+                    if(j == 1){
+                        if(board[i][j] == 0){
+                            continue;
+                        }
+                        else{
+                            if(board[i][j-1] == 0){
+                                continue;
+                            }
+                            else{
+                                // DBL_RIGHT MOVE (where both squares belong on top or bottom in goal state after a DBL_RIGHT)
+                                if(((board[i][j-1] == GOALSTATE[i-1][j]) || (board[i][j-1] == GOALSTATE[i+1][j])) && ((board[i][j] == GOALSTATE[i+1][j+1]) || (board[i][j] == GOALSTATE[i-1][j+1]))){
+                                    dist+=3;
+                                } 
+                            }
+                            if(board[i][j+1] == 0){
+                                continue;
+                            }
+                            else{
+                                // DBL_LEFT MOVE (where both squares belong on top or bottom in goal state after a DBL_LEFT)
+                                if(((board[i][j+1] == GOALSTATE[i-1][j]) || (board[i][j+1] == GOALSTATE[i+1][j])) && ((board[i][j] == GOALSTATE[i+1][j-1]) || (board[i][j] == GOALSTATE[i-1][j-1]))){
+                                    dist+=3;
+                                }
+                            }
+                            if(board[i+1][j] == 0){
+                                continue;
+                            }
+                            else{
+                                // DBL_UP MOVE (where both squares belong on top or bottom in goal state after a DBL_UP)
+                                if(((board[i+1][j] == GOALSTATE[i][j+1]) || (board[i+1][j] == GOALSTATE[i][j-1])) && ((board[i][j] == GOALSTATE[i-1][j-1]) || (board[i][j] == GOALSTATE[i-1][j+1]))){
+                                    dist+=3;
+                                }
+                            }
+                            if(board[i-1][j] == 0){
+                                continue;
+                            }
+                            else{
+                                // DBL_DOWN MOVE (where both squares belong on top or bottom in goal state after a DBL_DOWN)
+                                if(((board[i-1][j] == GOALSTATE[i][j+1]) || (board[i-1][j] == GOALSTATE[i][j-1])) && ((board[i][j] == GOALSTATE[i+1][j-1]) || (board[i][j] == GOALSTATE[i+1][j+1]))){
+                                    dist+=3;
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        if(board[i+1][j] == 0){
+                            continue;
+                        }
+                        else{
+                            // DBL_UP MOVE
+                            if((board[i+1][j] == GOALSTATE[i][j]) && (board[i][j] == GOALSTATE[i-1][j])){
+                                dist+=1;
+                            }
+                        }
+                        if(board[i-1][j] == 0){
+                            continue;
+                        }
+                        else{
+                            // DBL_DOWN MOVE
+                            if((board[i-1][j] == GOALSTATE[i][j]) && ((board[i][j] == GOALSTATE[i+1][j]))){
+                                dist+=1;
+                            }
+                        }  
+                    }
+                 }  
+                else if(i == 0){
+                    if(j == 1){
+                        if(board[i][j] == 0 || board[i][j+1] == 0){
+                            continue;
+                        }
+                        else{
+                            // DBL_RIGHT 
+                            if((board[i][j-1] == GOALSTATE[i][j]) && (board[i][j] == GOALSTATE[i][j+1])){
+                                dist++;
+                            }
+                            //DBL_LEFT
+                            if((board[i][j+1] == GOALSTATE[i][j]) && (board[i][j] == GOALSTATE[i][j-1])){
+                                dist++;
+                            }
+                        } 
+                    }
+                }   
+			}
+		}  
+		return dist; 
 	}
 }

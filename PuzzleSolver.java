@@ -2,7 +2,6 @@ package edu.iastate.cs472.proj1;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
-
 /**
  *  
  * @author
@@ -40,7 +39,8 @@ public class PuzzleSolver
 		String fileNames[] = new String[] {"8Puzzle.txt"}; 
 
 		State s0 = new State(fileNames[0]);
-
+		s0.solvable();
+		System.out.println(s0.computeNumSingleDoubleMoves());
 		// EightPuzzle.solve8Puzzle(s0);
 
 	}
