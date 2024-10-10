@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 /**
  *  
  * @author
- *
+ * Luke Munn
  */
 
 public class EightPuzzle 
@@ -73,7 +73,6 @@ public class EightPuzzle
 		if(h == Heuristic.DoubleMoveHeuristic){
 			MOVES = DBL_MOVES;
 		}
-		Move Moe = Move.DBL_DOWN;
 		// Initialize the two lists used by the algorithm. 
 		OrderedStateList OPEN = new OrderedStateList(h, true); 
 		OrderedStateList CLOSE = new OrderedStateList(h, false);		
@@ -81,7 +80,7 @@ public class EightPuzzle
 		// Implement the algorithm described in Section 3 to solve the puzzle. 
 		OPEN.addState(s0);
 		s0.numMoves = 0;
-		int hs0 = s0.cost();
+		s0.cost();
 		State currState = s0;
 		while(!currState.isGoalState()){
 			currState = OPEN.remove();
@@ -90,8 +89,6 @@ public class EightPuzzle
 			}
 			else{
 				CLOSE.addState(currState);
-				if(currState.isGoalState()){
-				}
 				for(Move i : MOVES){
 					try {
 						State t = currState.successorState(i);
@@ -100,7 +97,7 @@ public class EightPuzzle
 							t.cost();
 							State OpenState = OPEN.findState(t);
 							State CloseState = CLOSE.findState(t);
-							if(OpenState != null){
+			 				if(OpenState != null){
 								//new is less
 								if (t.compareTo(OpenState) < 0){
 									t.predecessor = currState;
@@ -109,8 +106,8 @@ public class EightPuzzle
 							if(CloseState != null){
 								//new is less
 								if (t.compareTo(CloseState) < 0){
-									t.predecessor = currState;
 									CLOSE.removeState(t);
+									t.predecessor = currState;
 									OPEN.addState(t);
 								}
 							}

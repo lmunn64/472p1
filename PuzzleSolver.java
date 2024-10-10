@@ -38,7 +38,7 @@ public class PuzzleSolver
 
 		String fileNames[] = new String[] {"8Puzzle.txt", "8Puzzle2.txt"}; 
 
-		State s0 = new State(fileNames[0]);
+		State s0 = new State(fileNames[1]);
 		String sol = EightPuzzle.solve8Puzzle(s0);
 		System.out.println(sol);
 	}

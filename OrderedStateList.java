@@ -84,7 +84,6 @@ public class OrderedStateList
 			f.next = s;
 			head.previous = s;
 			size++;
-				
 	  }
 	  
 	  
@@ -120,15 +119,16 @@ public class OrderedStateList
 	   */
 	  public void removeState(State s) throws IllegalStateException
 	  {
-		State f;
-		f = head;
+		State f = head;
 		while(f.next != head){
 			if(f.next.equals(s)){
-				State temp = f.next.clone();
+				State temp = f.next;
 				f.next = temp.next;
 				temp.next.previous = f;
 				size--;
+				return;
 			}
+			f = f.next;
 		}  
 		throw new IllegalStateException("ORDERED_STATE_LIST: removeState(State s) No state s in list");
 	  }
@@ -143,8 +143,8 @@ public class OrderedStateList
 	  public State remove()
 	  {
 		  State returnState = head.next;
-		  head.next = returnState.next;
-		  returnState.next.previous = head;
+		  head.next = head.next.next;
+		  head.next.previous = head;
 		  size--;
 		  return returnState; 
 	  }

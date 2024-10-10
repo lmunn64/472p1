@@ -389,10 +389,14 @@ public class State implements Cloneable, Comparable<State>
     public boolean equals(Object o)
     {
         State other = (State) o;
-    	if (Arrays.deepEquals(board, other.board)){
-            return true; 
-        }
-    	return false;
+        for(int a = 0; a < 3; a++){
+			for(int b = 0; b < 3; b++){
+				if(other.board[a][b] != this.board[a][b]){
+                    return false;
+                }
+			}
+		}
+    	return true;
     }
         
     
@@ -414,7 +418,6 @@ public class State implements Cloneable, Comparable<State>
         int cost = 0;
         Heuristic Tile = Heuristic.TileMismatch;
         Heuristic Man = Heuristic.ManhattanDist;
-        Heuristic Doub = Heuristic.DoubleMoveHeuristic;
 
     	if(heu == Tile){
             compute = computeNumMismatchedTiles();
@@ -609,7 +612,8 @@ public class State implements Cloneable, Comparable<State>
                 }   
 			}
 		}  
-		numSingleDoubleMoves = dist;
-        return dist; 
+        int man = computeManhattanDistance();
+		numSingleDoubleMoves = man - dist;
+        return numSingleDoubleMoves; 
 	}
 }

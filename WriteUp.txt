@@ -1,0 +1,25 @@
+Luke Munn
+COMS 472
+Project 1 Writeup:
+
+My admissible heuristic for h3 uses the Manhattan distance heuristic 
+minus the cost of directly adjacent double squares to calculate moves.
+In detail, if it is possible to move 2 squares in a direction, lets say
+LEFT. If moving those two squares to the left ends them up in their goal 
+positions, then we add 1 to our DBL_distance, as it would take 2 moves to
+that state without double moves. Another way it calulates to get closer to the 
+real number of moves is by checking if we move two squares, and then we 
+move each of those squares independently UP or DOWN or both
+(if we have just DBL_MOVE'd LEFT or RIGHT) or LEFT or RIGHT or both
+(if we have just DBL_MOVE'd UP or DOWN), then we also add 1 to our DBL_distance,
+as it would take 3 moves to get to that state instead of 4. Then, we take
+the Manhattan distance and return the Manhattan Distance subtracted by our
+DBL_distance to get our estimated cost. This works because when we calculate
+our DBL_distance, we are adding the difference of moves it would take by
+only using a single move by the difference of moves it would take by using
+a double move. Subtracting this distance by the Manhattan distance of this
+state will remove single moves that can be more efficiently completed with
+double moves. Since the Manhattan distance is already admissible for single moves,
+subtracting the only inefficient moves when using doubl moves from this
+distance will still create an admissible heuristic for double moves. Therefore
+making this an admissible heuristic consider single moves and efficient double moves.
