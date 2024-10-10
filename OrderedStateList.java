@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 /**
  *  
  * @author
- *
+ * Luke Munn
  */
 
 /**
@@ -38,9 +38,13 @@ public class OrderedStateList
 	   */
 	  public OrderedStateList(Heuristic h, boolean isOpen)
 	  {
-		  //	TODO
-		  State.heu = h;   // initialize heuristic used for evaluating all State objects. 
-
+		State.heu = h;   // initialize heuristic used for evaluating all State objects.
+		int[][] empty = {{0,0,0},{0,0,0},{0,0,0}};
+		head = new State(empty);
+		isOPEN = isOpen;
+		head.previous = head;
+		head.next = head;
+		size = 1;
 	  }
 
 	  
@@ -61,7 +65,26 @@ public class OrderedStateList
 	   */
 	  public void addState(State s)
 	  {
-		  // TODO 
+		State f;
+		f = head;
+		while(f.next != head){
+			if(compareStates(s, f.next) <= 0){	
+				f.next.previous = s;
+				s.previous = f;
+				s.next = f.next;
+				f.next = s;
+				size++;
+				return;
+			}
+			f = f.next;
+		}  
+			// No such state <= 0
+			s.next = head;
+			s.previous = f;
+			f.next = s;
+			head.previous = s;
+			size++;
+				
 	  }
 	  
 	  
@@ -77,7 +100,13 @@ public class OrderedStateList
 	   */
 	  public State findState(State s)
 	  {
-		  // TODO 
+		State f = head;
+		while(f.next != head){
+			if(f.next.equals(s)){
+				return f.next;
+			}
+			f = f.next;
+		}  
 		  return null; 
 	  }
 	  
@@ -91,7 +120,17 @@ public class OrderedStateList
 	   */
 	  public void removeState(State s) throws IllegalStateException
 	  {
-		  // TODO 
+		State f;
+		f = head;
+		while(f.next != head){
+			if(f.next.equals(s)){
+				State temp = f.next.clone();
+				f.next = temp.next;
+				temp.next.previous = f;
+				size--;
+			}
+		}  
+		throw new IllegalStateException("ORDERED_STATE_LIST: removeState(State s) No state s in list");
 	  }
 	  
 	  
@@ -103,8 +142,11 @@ public class OrderedStateList
 	   */
 	  public State remove()
 	  {
-		  // TODO
-		  return null; 
+		  State returnState = head.next;
+		  head.next = returnState.next;
+		  returnState.next.previous = head;
+		  size--;
+		  return returnState; 
 	  }
 	  
 	  
@@ -123,8 +165,10 @@ public class OrderedStateList
 	   */
 	  private int compareStates(State s1, State s2)
 	  {
-		  // TODO 
-		  
-		  return 0; 
+		  if(isOPEN){
+			return s1.compareTo(s2);
+		  }
+		  StateComparator s = new StateComparator();
+		  return s.compare(s1, s2); 
 	  }
 }

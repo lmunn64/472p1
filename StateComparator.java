@@ -1,11 +1,11 @@
 package edu.iastate.cs472.proj1;
 
 import java.util.Comparator;
-
+import java.util.Arrays;
 /**
  *  
  * @author
- *
+ * Luke Munn
  */
 
 /**
@@ -22,13 +22,25 @@ import java.util.Comparator;
  * By definition the first state is less than the second one.  
  * 
  * The comparator will be used for maintaining the CLOSED list used in the A* algorithm. 
+ * 
+ * @returns 
+ * 1 if s1 > s2
+ * -1 if s1 < s2
+ * 0 if equal
  */
 public class StateComparator implements Comparator<State>
 {
 	@Override
 	public int compare(State s1, State s2)
 	{
-		// TODO 
+		for(int j = 0; j < 9; j++){
+			if(s1.board[j/3][j%3] > s2.board[j/3][j%3]){
+				return 1;
+			}
+			if(s1.board[j/3][j%3] < s2.board[j/3][j%3]){
+				return -1;
+			}
+		}
 	    return 0;
 	}  		
 }

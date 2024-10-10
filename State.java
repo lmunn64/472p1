@@ -8,7 +8,7 @@ import java.io.File;
 /**
  *  
  * @author
- *
+ * Luke Munn
  */
 
 
@@ -36,10 +36,11 @@ public class State implements Cloneable, Comparable<State>
 	public State predecessor; 	// predecessor node on the path from the initial state 
 	
 	public Move move;           // the move that generated this state from its predecessor
-	public int numMoves; 	    // number of moves from the initial state to this state
+	public int numMoves; 	    // number of moves from the initial state to this state g(s)
     public int[] empty = {0,0}; // location of empty square
 	public static Heuristic heu; // heuristic used. shared by all the states. 
 	
+    //all h(s)
 	private int numMismatchedTiles = -1;    // number of mismatched tiles between this state 
 	                                        // and the goal state; negative if not computed yet.
 	private int ManhattanDistance = -1;     // Manhattan distance between this state and the 
@@ -96,12 +97,16 @@ public class State implements Cloneable, Comparable<State>
     public State (String inputFileName) throws FileNotFoundException, IllegalArgumentException
     {
         int[][] initBoard = new int[3][3];
-        File file = new File("8Puzzle.txt");
+        File file = new File(inputFileName);
         Scanner scnr = new Scanner(file);
 		int j = 0;
 		int i = 0;
 		while(scnr.hasNext()){
 			initBoard[i][j] = Integer.valueOf(scnr.next());
+            if(initBoard[i][j] == 0){
+                empty[0] = i;
+                empty[1] = j;
+            }
 			switch((j + 1) % 3){
 				case 0:
 					i++;
@@ -155,21 +160,20 @@ public class State implements Cloneable, Comparable<State>
     {
         int i = empty[0];
         int j = empty[1];
+        int[][] succBoard = new int [3][3];
 
-        State succ = this.clone();
-
-        // test equals to predecessor
-        if(this.equals(succ)){
-            return null;
-        }
-        
+        for(int a = 0; a < 3; a++){
+			for(int b = 0; b < 3; b++){
+				succBoard[a][b] = this.board[a][b];           
+			}
+		}
         // check and handle move
     	switch(m){
             case LEFT:
                 if(j < 2){
-                    temp = succ.board[i][j+1];
-                    succ.board[i][j] = temp;
-                    succ.board[i][j+1] = 0;
+                    int temp = succBoard[i][j+1];
+                    succBoard[i][j] = temp;
+                    succBoard[i][j+1] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move LEFT");
@@ -177,9 +181,9 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case RIGHT:
                 if(j > 0){
-                    temp = succ.board[i][j-1];
-                    succ.board[i][j] = temp;
-                    succ.board[i][j-1] = 0;
+                    int temp = succBoard[i][j-1];
+                    succBoard[i][j] = temp;
+                    succBoard[i][j-1] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move RIGHT");
@@ -187,9 +191,9 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case UP:
                 if(i < 2){
-                    temp = succ.board[i+1][j];
-                    succ.board[i][j] = temp;
-                    succ.board[i+1][j] = 0;
+                    int temp = succBoard[i+1][j];
+                    succBoard[i][j] = temp;
+                    succBoard[i+1][j] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move UP");
@@ -197,9 +201,9 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case DOWN:
                 if(i > 0){
-                    temp = succ.board[i-1][j];
-                    succ.board[i][j] = temp;
-                    succ.board[i-1][j] = 0;
+                    int temp = succBoard[i-1][j];
+                    succBoard[i][j] = temp;
+                    succBoard[i-1][j] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move DOWN");
@@ -207,11 +211,11 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case DBL_RIGHT:
                 if(j == 2){
-                    temp1 = succ.board[i][j-1];
-                    temp2 = succ.board[i][j-2];
-                    succ.board[i][j] = temp1;
-                    succ.board[i][j-1] = temp2;
-                    succ.board[i][j-2] = 0;
+                    int temp1 = succBoard[i][j-1];
+                    int temp2 = succBoard[i][j-2];
+                    succBoard[i][j] = temp1;
+                    succBoard[i][j-1] = temp2;
+                    succBoard[i][j-2] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move DBL_RIGHT");
@@ -219,11 +223,11 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case DBL_LEFT:
                 if(j == 0){
-                    temp1 = succ.board[i][j+1];
-                    temp2 = succ.board[i][j+2];
-                    succ.board[i][j] = temp1;
-                    succ.board[i][j+1] = temp2;
-                    succ.board[i][j+2] = 0;
+                    int temp1 = succBoard[i][j+1];
+                    int temp2 = succBoard[i][j+2];
+                    succBoard[i][j] = temp1;
+                    succBoard[i][j+1] = temp2;
+                    succBoard[i][j+2] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move DBL_LEFT");
@@ -231,11 +235,11 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case DBL_UP:
                 if(i == 0){
-                    temp1 = succ.board[i+1][j];
-                    temp2 = succ.board[i+2][j];
-                    succ.board[i][j] = temp1;
-                    succ.board[i+1][j] = temp2;
-                    succ.board[i+2][j] = 0;
+                    int temp1 = succBoard[i+1][j];
+                    int temp2 = succBoard[i+2][j];
+                    succBoard[i][j] = temp1;
+                    succBoard[i+1][j] = temp2;
+                    succBoard[i+2][j] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move DBL_UP");
@@ -243,11 +247,11 @@ public class State implements Cloneable, Comparable<State>
                 break;
             case DBL_DOWN:
                 if(i == 2){
-                    temp1 = succ.board[i-1][j];
-                    temp2 = succ.board[i-2][j];
-                    succ.board[i][j] = temp1;
-                    succ.board[i-1][j] = temp2;
-                    succ.board[i-2][j] = 0;
+                    int temp1 = succBoard[i-1][j];
+                    int temp2 = succBoard[i-2][j];
+                    succBoard[i][j] = temp1;
+                    succBoard[i-1][j] = temp2;
+                    succBoard[i-2][j] = 0;
                 }
                 else{
                     throw new IllegalArgumentException("Illegal move DBL_DOWN");
@@ -255,11 +259,17 @@ public class State implements Cloneable, Comparable<State>
                 break; 
         }
     	
-        succ.predecessor = this;
-        succ.move = m;
-        succ.numMoves = this.numMoves + 1;
-
-        return succ;  
+        State successor = new State(succBoard);
+        // test equals to predecessor
+        if(this.predecessor != null){
+            if(successor.equals(this.predecessor)){
+                return null;
+            }
+        }
+        successor.predecessor = this;
+        successor.move = m;
+        successor.numMoves = this.numMoves + 1;
+        return successor;  
     }
     
         
@@ -354,7 +364,7 @@ public class State implements Cloneable, Comparable<State>
     @Override
     public Object clone()
     {
-        int[][] newBoard;
+        int[][] newBoard = new int[3][3];
 
     	for(int a = 0; a < 3; a++){
 			for(int b = 0; b < 3; b++){
@@ -378,7 +388,8 @@ public class State implements Cloneable, Comparable<State>
     @Override 
     public boolean equals(Object o)
     {
-    	if (Arrays.deepEquals(board, o.board)){
+        State other = (State) o;
+    	if (Arrays.deepEquals(board, other.board)){
             return true; 
         }
     	return false;
@@ -399,8 +410,25 @@ public class State implements Cloneable, Comparable<State>
      */
     public int cost() throws IllegalArgumentException
     {
-    	//TODO 
-    	return 0; 
+        int compute = 0;
+        int cost = 0;
+        Heuristic Tile = Heuristic.TileMismatch;
+        Heuristic Man = Heuristic.ManhattanDist;
+        Heuristic Doub = Heuristic.DoubleMoveHeuristic;
+
+    	if(heu == Tile){
+            compute = computeNumMismatchedTiles();
+            cost = numMoves + compute;
+        }
+        else if(heu == Man){
+            compute = computeManhattanDistance();
+            cost = numMoves + compute;
+        }
+        else{
+            compute = computeNumSingleDoubleMoves();
+            cost = numMoves + compute;
+        }
+    	return cost; 
     }
 
     
@@ -416,7 +444,12 @@ public class State implements Cloneable, Comparable<State>
     @Override
     public int compareTo(State s)
     {
-    	// TODO 
+    	if(this.cost() < s.cost()){
+            return -1;
+        }
+        if(this.cost() > s.cost()){
+            return 1;
+        }
     	return 0; 
     }
     
@@ -440,7 +473,8 @@ public class State implements Cloneable, Comparable<State>
                 }
 			}
 		}
-		return mismatched; 
+        numMismatchedTiles = mismatched;
+		return numMismatchedTiles; 
 	}
 
 	
@@ -459,13 +493,16 @@ public class State implements Cloneable, Comparable<State>
 
 		for(int i = 0; i < 9; i++){
             if(board[i/3][i%3] == 0){
-                i++;
+                continue;
             }
-			for(int j = 0; j < 9; j++){
-				if(GOALSTATE[j/3][j%3] == board[i/3][i%3]){
-                    dist += Math.abs((i/3) - (j/3)) + Math.abs((i%3) - (j%3));
-                }
-			}
+            else{
+               for(int j = 0; j < 9; j++){
+				    if(GOALSTATE[j/3][j%3] == board[i/3][i%3]){
+                        dist += Math.abs((i/3) - (j/3)) + Math.abs((i%3) - (j%3));
+                    }
+			    } 
+            }
+			
 		} 
         ManhattanDistance = dist;
 		return dist; 
@@ -572,6 +609,7 @@ public class State implements Cloneable, Comparable<State>
                 }   
 			}
 		}  
-		return dist; 
+		numSingleDoubleMoves = dist;
+        return dist; 
 	}
 }
