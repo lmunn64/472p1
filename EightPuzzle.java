@@ -41,16 +41,17 @@ public class EightPuzzle
 		
 		Heuristic h[] = {Heuristic.TileMismatch, Heuristic.ManhattanDist, Heuristic.DoubleMoveHeuristic }; 
 		String [] moves = new String[3]; 
-		
-		for (int i = 0; i < 2; i++)
+		String allMoves = "";
+		for (int i = 0; i < 3; i++)
 		{
 			moves[i] = AStar(s0, h[i]); 
+			allMoves += moves[i] + "\n";
 		}
 		
 		// 3) Combine the three solution strings into one that would print out in the 
 		//    output format specified in Section 6 of the project description.
 		
-		return moves[0]; 
+		return allMoves; 
 	}
 
 	
@@ -94,26 +95,30 @@ public class EightPuzzle
 				for(Move i : MOVES){
 					try {
 						State t = currState.successorState(i);
-						t.cost();
-						State OpenState = OPEN.findState(t);
-						State CloseState = CLOSE.findState(t);
-						if(OpenState != null){
-							//new is less
-							if (t.compareTo(OpenState) < 0){
-								t.predecessor = currState;
+						// if t is not predecessor state
+						if(t != null){
+							t.cost();
+							State OpenState = OPEN.findState(t);
+							State CloseState = CLOSE.findState(t);
+							if(OpenState != null){
+								//new is less
+								if (t.compareTo(OpenState) < 0){
+									t.predecessor = currState;
+								}
 							}
-						}
-						if(CloseState != null){
-							//new is less
-							if (t.compareTo(CloseState) < 0){
-								t.predecessor = currState;
-								CLOSE.removeState(t);
+							if(CloseState != null){
+								//new is less
+								if (t.compareTo(CloseState) < 0){
+									t.predecessor = currState;
+									CLOSE.removeState(t);
+									OPEN.addState(t);
+								}
+							}
+							else{
 								OPEN.addState(t);
 							}
 						}
-						else{
-							OPEN.addState(t);
-						}
+						
 					} catch (IllegalArgumentException e) {
 						continue;
 					}
@@ -144,11 +149,27 @@ public class EightPuzzle
 	private static String solutionPath(State goal)
 	{
 		String result = "";
-		for(int a = 0; a < 3; a++){
-			for(int b = 0; b < 3; b++){
-				newBoard[a][b] = goal.board[a][b];
-			}
+		String[] arr = new String[goal.numMoves+1];
+		int i = 0;
+		if(goal.heu == Heuristic.TileMismatch){
+			result = goal.numMoves + " moves in total (heuristic: number of mismatched tiles)\n \n";
 		}
+		if(goal.heu == Heuristic.ManhattanDist){
+			result = goal.numMoves + " moves in total (heuristic: the Manhattan Distance)\n \n";
+		}
+		if(goal.heu == Heuristic.DoubleMoveHeuristic){
+			result = goal.numMoves + " moves in total (heuristic: double moves allowed)\n \n";
+		}
+		while(goal.predecessor != null){
+			arr[i] =  goal.move + "\n\n" + goal.toString() + "\n";
+			goal = goal.predecessor;
+			i++;
+		}
+		arr[i] =  goal.toString() + "\n";
+		for(int j = i; j > -1; j--){
+			result+=arr[j];
+		}
+	
 		return result; 
 	}
 	
